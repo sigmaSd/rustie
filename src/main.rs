@@ -282,7 +282,6 @@ impl Rustie {
     }
 
     fn back_space(&mut self) {
-        self.update_hint();
         let cursor_pos = self.cursor.pos();
         if cursor_pos == self.lock_pos {
             return;
@@ -291,6 +290,7 @@ impl Rustie {
         self.cursor.move_left(1);
         self.print(" ");
         self.cursor.move_left(1);
+        self.update_hint();
 
         if cursor_pos.0 == 0 {
             self.cursor
@@ -325,7 +325,7 @@ impl Rustie {
                     f_name.starts_with(slash_tail)
                 })
                 .collect();
-        } else if self.buffer.ends_with(' ') {
+        } else if !self.buffer.ends_with(' ') {
             self.hints = self
                 .env
                 .entrys
@@ -337,16 +337,7 @@ impl Rustie {
                 .map(ToOwned::to_owned)
                 .collect();
         } else {
-            self.hints = self
-                .env
-                .entrys
-                .iter()
-                .filter(|e| {
-                    let f_name = e.file_name().unwrap().to_str().unwrap();
-                    f_name.starts_with(tail)
-                })
-                .map(ToOwned::to_owned)
-                .collect();
+            self.hints = self.env.entrys.iter().map(ToOwned::to_owned).collect();
         }
 
         self.check_cmd_hint();
