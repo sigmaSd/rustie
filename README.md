@@ -1,0 +1,2 @@
+# rustie
+Cross platform shell
