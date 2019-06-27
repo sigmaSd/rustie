@@ -16,6 +16,7 @@ const PROMPT: &str = "rustie>>> ";
 
 enum Cmds {
     Cd,
+    Exit,
 }
 
 impl ToString for Cmds {
@@ -23,6 +24,7 @@ impl ToString for Cmds {
         use Cmds::*;
         match self {
             Cd => "cd".into(),
+            Exit => "exit".into(),
         }
     }
 }
@@ -32,6 +34,7 @@ impl From<String> for Cmds {
         use Cmds::*;
         match s.as_str() {
             "cd" => Cd,
+            "exit" => Exit,
             _ => unimplemented!(),
         }
     }
@@ -39,7 +42,7 @@ impl From<String> for Cmds {
 
 impl Cmds {
     fn extract_cmds(s: &str) -> Vec<(usize, String)> {
-        let cmds = ["cd"];
+        let cmds = ["cd", "exit"];
         let mut extracted_cmds = vec![];
         for c in cmds.iter() {
             if let Some(n) = s.find(c) {
@@ -50,10 +53,11 @@ impl Cmds {
         extracted_cmds
     }
 
-    fn get_hint_cond(&self) -> impl Fn(&str) -> bool {
+    fn get_hint_cond(&self) -> Box<Fn(&str) -> bool> {
         use Cmds::*;
         match self {
-            Cd => |i: &str| path::Path::new(i).is_dir(),
+            Cd => Box::new(|i: &str| path::Path::new(i).is_dir()),
+            Exit => Box::new(|_: &str| false),
         }
     }
 
@@ -61,6 +65,11 @@ impl Cmds {
         use Cmds::*;
         match self {
             Cd => env::set_current_dir(s.split_whitespace().next().unwrap()).unwrap(),
+            Exit => {
+                if s.is_empty() {
+                    process::exit(0)
+                }
+            }
         }
     }
 }
@@ -194,14 +203,8 @@ impl Rustie {
     }
 
     fn enter(&mut self) {
-        //self.print("\n\r");
-
-        let out = self.eval().unwrap_or_else(|_| "".into());
-        out.split('\n').for_each(|p| {
-            self.print("\n\r");
-            self.print(p);
-        });
-
+        self.print("\n\r");
+        let _ = self.eval();
         self.print_prompt();
         self.buffer.clear();
         self.env.update();
@@ -209,16 +212,16 @@ impl Rustie {
         self.lock_pos.1 = self.cursor.pos().1;
     }
 
-    fn eval(&mut self) -> io::Result<String> {
+    fn eval(&mut self) -> io::Result<()> {
         let cmds = Cmds::extract_cmds(&self.buffer);
         if cmds.is_empty() {
-            self.parse_as_intern_cmd()
+            self.parse_as_extern_cmd()
         } else {
-            self.parse_as_extern_cmd(cmds)
+            self.parse_as_intern_cmd(cmds)
         }
     }
 
-    fn parse_as_extern_cmd(&self, cmds: Vec<(usize, String)>) -> io::Result<String> {
+    fn parse_as_intern_cmd(&self, cmds: Vec<(usize, String)>) -> io::Result<()> {
         for cmd in cmds {
             let (i, cmd) = (cmd.0, Cmds::from(cmd.1));
             let cmd_suffix: String = self
@@ -230,27 +233,23 @@ impl Rustie {
             cmd.run(&cmd_suffix);
         }
 
-        Ok("".into())
+        Ok(())
     }
 
-    fn parse_as_intern_cmd(&self) -> io::Result<String> {
+    fn parse_as_extern_cmd(&self) -> io::Result<()> {
+        crossterm::RawScreen::disable_raw_mode().unwrap();
+
         let mut items = self.buffer.split_whitespace();
         let head = match items.next() {
             Some(h) => h,
-            None => return Ok("".into()),
+            None => return Ok(()),
         };
-
-        let out = process::Command::new(head)
+        process::Command::new(head)
             .args(&items.collect::<Vec<&str>>())
-            .output()?;
+            .spawn()?
+            .wait()?;
 
-        let out = if out.stderr.is_empty() {
-            out.stdout
-        } else {
-            out.stderr
-        };
-
-        Ok(String::from_utf8(out).unwrap())
+        Ok(())
     }
 
     fn tab(&mut self) {
@@ -362,11 +361,12 @@ impl Rustie {
     }
 
     fn run(&mut self) {
-        let _screen = crossterm::RawScreen::into_raw_mode().unwrap();
-
         self.print_prompt();
         self.update_hint();
         loop {
+            crossterm::RawScreen::into_raw_mode()
+                .unwrap()
+                .disable_drop();
             if let Some(key_ev) = self.input.next() {
                 self.terminal.clear(ClearType::UntilNewLine).unwrap();
                 match key_ev {
@@ -389,9 +389,8 @@ impl Rustie {
                         self.right();
                     }
                     InputEvent::Keyboard(KeyEvent::Ctrl('d')) => {
-                        dbg!(&self.hints.current_hints);
+                        //dbg!(&self.hints.current_hints);
                     }
-                    InputEvent::Keyboard(KeyEvent::Ctrl('c')) => return,
                     _ => (),
                 }
             }
