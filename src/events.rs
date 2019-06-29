@@ -1,3 +1,5 @@
+use crossterm::Color;
+
 impl super::Rustie {
     pub fn right(&mut self) {
         if self.hints.current().is_some() {
@@ -17,7 +19,7 @@ impl super::Rustie {
         }
         self.buffer.pop();
         self.cursor.move_left(1);
-        self.print(" ");
+        self.print(" ", Color::White);
         self.cursor.move_left(1);
         self.update_hint();
 
@@ -33,12 +35,12 @@ impl super::Rustie {
         self.buffer.push(c);
         self.update_lock_pos();
         self.update_hint();
-        self.print(c);
+        self.print(c, Color::DarkYellow);
         self.print_hint();
     }
 
     pub fn enter(&mut self) {
-        self.print("\n\r");
+        self.print("\n\r", Color::White);
         let _ = self.eval();
         self.print_prompt();
         self.buffer.clear();
@@ -49,7 +51,7 @@ impl super::Rustie {
 
     pub fn handle_ctrl_c(&mut self) {
         self.buffer.clear();
-        self.print("\r\n");
+        self.print("\r\n", Color::White);
         self.print_prompt();
     }
 
@@ -64,7 +66,7 @@ impl super::Rustie {
         let _ = self.terminal.clear(crossterm::ClearType::All);
         self.print_prompt();
         self.lock_pos = (super::PROMPT.len() as u16, 0);
-        self.print(&self.buffer);
+        self.print(&self.buffer, Color::DarkYellow);
     }
 }
 

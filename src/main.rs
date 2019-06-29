@@ -14,7 +14,7 @@ mod events;
 mod printer;
 mod writer;
 
-pub const PROMPT: &str = "rustie>>> ";
+pub const PROMPT: &str = "rustie~> ";
 
 struct Rustie {
     input: SyncReader,
@@ -50,6 +50,7 @@ impl Rustie {
     }
 
     fn run(&mut self) {
+        self.welcome();
         self.print_prompt();
         self.update_hint();
         loop {
