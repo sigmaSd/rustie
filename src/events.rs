@@ -59,6 +59,7 @@ impl super::Rustie {
         self.buffer.clear();
         self.print("\r\n", Color::White);
         self.print_prompt();
+        self.update_lock_pos();
     }
 
     pub fn handle_ctrl_d(&mut self) {
