@@ -1,6 +1,7 @@
 pub trait StringTools {
     fn strings_inter(&mut self, s: &str);
     fn split_as_cmd(&self) -> std::vec::IntoIter<String>;
+    fn chars_count(&self) -> usize;
 }
 
 impl StringTools for String {
@@ -51,5 +52,9 @@ impl StringTools for String {
             cmds.push(tmp_cmd.drain(..).collect());
         }
         cmds.into_iter()
+    }
+
+    fn chars_count(&self) -> usize {
+        self.chars().count()
     }
 }

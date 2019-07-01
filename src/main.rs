@@ -9,6 +9,8 @@ mod env;
 use env::Env;
 mod hints;
 use hints::Hints;
+mod history;
+use history::History;
 mod eval;
 mod events;
 mod printer;
@@ -26,6 +28,7 @@ struct Rustie {
     env: Env,
     // dont depass this point
     lock_pos: (u16, u16),
+    history: History,
 }
 
 impl Rustie {
@@ -35,7 +38,8 @@ impl Rustie {
         let terminal = crossterm.terminal();
         let color = crossterm.color();
         let cursor = crossterm.cursor();
-        let lock_pos = (PROMPT.len() as u16, cursor.pos().1);
+        let lock_pos = (PROMPT.len() as u16, 0);
+        let history = History::default();
 
         Self {
             input,
@@ -46,6 +50,7 @@ impl Rustie {
             hints: Hints::default(),
             env: Env::new("./"),
             lock_pos,
+            history,
         }
     }
 
@@ -70,6 +75,12 @@ impl Rustie {
                     }
                     InputEvent::Keyboard(KeyEvent::Right) => {
                         self.right();
+                    }
+                    InputEvent::Keyboard(KeyEvent::Up) => {
+                        self.up();
+                    }
+                    InputEvent::Keyboard(KeyEvent::Down) => {
+                        self.down();
                     }
                     InputEvent::Keyboard(KeyEvent::Ctrl('d')) => {
                         self.handle_ctrl_d();

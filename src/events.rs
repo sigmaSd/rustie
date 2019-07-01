@@ -1,4 +1,4 @@
-use crossterm::Color;
+use crossterm::{ClearType, Color};
 
 impl super::Rustie {
     pub fn right(&mut self) {
@@ -18,6 +18,7 @@ impl super::Rustie {
             return;
         }
         self.buffer.pop();
+        self.history.update_current(&self.buffer);
         self.cursor.move_left(1);
         self.print(" ", Color::White);
         self.cursor.move_left(1);
@@ -33,7 +34,7 @@ impl super::Rustie {
     pub fn handle_char(&mut self, c: char) {
         // order matters
         self.buffer.push(c);
-        self.update_lock_pos();
+        self.history.update_current(&self.buffer);
         // update env if a new slash is added or deleted (In/Out dir)
         if c == '/' {
             self.env.update(&self.buffer);
@@ -41,13 +42,14 @@ impl super::Rustie {
         self.update_hint();
         self.print(c, Color::DarkYellow);
         self.print_hint();
+        self.update_lock_pos();
     }
 
     pub fn enter(&mut self) {
         self.print("\n\r", Color::White);
         let _ = self.eval();
         self.print_prompt();
-        self.buffer.clear();
+        self.history.push(self.buffer.drain(..).collect());
         self.env.reset();
         self.update_hint();
         self.lock_pos.1 = self.cursor.pos().1;
@@ -71,6 +73,37 @@ impl super::Rustie {
         self.print_prompt();
         self.lock_pos = (super::PROMPT.len() as u16, 0);
         self.print(&self.buffer, Color::DarkYellow);
+    }
+
+    pub fn up(&mut self) {
+        let up = self.history.up();
+        if let Some(up) = up {
+            self.buffer = up.clone();
+            self.lock_pos.1 -= self.screen_height_overflow_by_str(&up);
+            let _ = self
+                .cursor
+                .goto(self.lock_pos.0 as u16, self.lock_pos.1 as u16);
+            let _ = self.terminal.clear(ClearType::FromCursorDown);
+            self.print(&up, Color::DarkYellow);
+        }
+    }
+
+    pub fn down(&mut self) {
+        if self.buffer.is_empty() {
+            return;
+        }
+
+        let down = self.history.down();
+        if let Some(down) = down {
+            self.buffer = down.clone();
+
+            self.lock_pos.1 -= self.screen_height_overflow_by_str(&down);
+            let _ = self
+                .cursor
+                .goto(self.lock_pos.0 as u16, self.lock_pos.1 as u16);
+            let _ = self.terminal.clear(ClearType::FromCursorDown);
+            self.print(&down, Color::DarkYellow);
+        }
     }
 }
 

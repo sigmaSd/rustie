@@ -16,9 +16,10 @@ impl super::Rustie {
         }
     }
 
-    pub fn welcome(&self) {
+    pub fn welcome(&mut self) {
         let _ = self.terminal.clear(ClearType::All);
-        self.print("Welcome to rusite!\n", Color::Blue);
+        self.print("Welcome to rusite!", Color::Blue);
+        self.newline();
     }
 
     pub fn print_prompt(&self) {
@@ -29,5 +30,21 @@ impl super::Rustie {
         let _ = self.color.set_fg(c);
         let _ = self.terminal.write(s.to_string());
         let _ = self.color.reset();
+    }
+
+    pub fn newline(&mut self) {
+        let _ = self.terminal.write("\n");
+        self.lock_pos.1 += 1;
+    }
+}
+
+// Overflow handling utilites
+impl super::Rustie {
+    pub fn screen_height_overflow_by_str(&self, out: &str) -> u16 {
+        let screen_size = self.terminal.terminal_size();
+        let cursor_pos = self.cursor.pos();
+        let new_lines = (out.to_owned().chars_count() as u16 + cursor_pos.0) / screen_size.0;
+
+        (new_lines + cursor_pos.1).saturating_sub(screen_size.1)
     }
 }
