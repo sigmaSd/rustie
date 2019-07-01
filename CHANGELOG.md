@@ -1,3 +1,6 @@
+**0.1.3**
+- fix clear bug
+
 **0.1.2**
 - Add History
 
