@@ -34,6 +34,10 @@ impl super::Rustie {
         // order matters
         self.buffer.push(c);
         self.update_lock_pos();
+        // update env if a new slash is added or deleted (In/Out dir)
+        if c == '/' {
+            self.env.update(&self.buffer);
+        }
         self.update_hint();
         self.print(c, Color::DarkYellow);
         self.print_hint();
@@ -44,7 +48,7 @@ impl super::Rustie {
         let _ = self.eval();
         self.print_prompt();
         self.buffer.clear();
-        self.env.update();
+        self.env.reset();
         self.update_hint();
         self.lock_pos.1 = self.cursor.pos().1;
     }

@@ -1,5 +1,5 @@
 use super::utils::StringTools;
-use super::{Cmds, Env};
+use super::Cmds;
 use std::iter;
 use std::path;
 
@@ -36,12 +36,12 @@ impl Hints {
             .collect();
     }
 
-    fn clear(&mut self) {
+    fn _clear(&mut self) {
         self.current_hints.clear();
         self.cursor = 0;
     }
 
-    pub fn append(&mut self, v: &mut Vec<path::PathBuf>) {
+    pub fn _append(&mut self, v: &mut Vec<path::PathBuf>) {
         self.current_hints.append(v);
     }
 }
@@ -66,34 +66,19 @@ impl super::Rustie {
             .last()
             .unwrap_or_else(|| "".to_string());
 
-        if tail.contains('/') {
-            let slash_tail = tail.rsplit('/').next().unwrap();
-            let mut path = path::Path::new(&tail).components();
-            if !tail.ends_with('/') && path.clone().count() > 1 {
-                path.next_back();
-            }
-            let new_env = Env::new(&path);
-
-            // place holder for a correct logic
-            self.hints.clear();
-            self.hints.append(
-                &mut new_env
-                    .clone()
-                    .into_iter()
-                    .filter(|e| {
-                        let f_name = e.file_name().unwrap().to_str().unwrap();
-                        f_name.starts_with(slash_tail)
-                    })
-                    .collect(),
-            );
-        } else if !self.buffer.ends_with(' ') {
+        if !self.buffer.ends_with(' ') {
             self.hints = self
                 .env
                 .clone()
                 .into_iter()
                 .filter(|e| {
                     let f_name = e.file_name().unwrap().to_str().unwrap();
-                    f_name.starts_with(&tail)
+                    if tail.contains('/') {
+                        let slash_tail = tail.rsplit('/').next().unwrap();
+                        f_name.starts_with(&slash_tail)
+                    } else {
+                        f_name.starts_with(&tail)
+                    }
                 })
                 .collect();
         } else {
