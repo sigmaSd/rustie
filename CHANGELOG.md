@@ -1,3 +1,6 @@
+**0.1.6**
+- Fix performance regression
+
 **0.1.5**
 - Ignore Ctrlc signal
 - Bug fixes
