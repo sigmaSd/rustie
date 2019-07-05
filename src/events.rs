@@ -1,3 +1,4 @@
+use super::utils;
 use crossterm::{ClearType, Color};
 
 impl super::Rustie {
@@ -47,7 +48,11 @@ impl super::Rustie {
 
     pub fn enter(&mut self) {
         self.new_line();
+
         let _ = self.eval();
+        utils::into_raw_mode();
+        self.print("\r", crossterm::Color::White);
+
         self.print_prompt();
         self.history.push(self.buffer.drain(..).collect());
         self.env.reset();

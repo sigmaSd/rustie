@@ -41,8 +41,6 @@ impl super::Rustie {
             .spawn()?
             .wait()?;
 
-        utils::into_raw_mode();
-        self.print("\r", crossterm::Color::White);
         Ok(())
     }
 }

@@ -58,8 +58,8 @@ impl Rustie {
         self.welcome();
         self.print_prompt();
         self.update_hint();
+        utils::into_raw_mode();
         loop {
-            utils::into_raw_mode();
             self.sync_lock();
             if let Some(key_ev) = self.input.next() {
                 self.terminal.clear(ClearType::UntilNewLine).unwrap();
