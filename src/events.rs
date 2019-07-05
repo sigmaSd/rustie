@@ -51,6 +51,7 @@ impl super::Rustie {
 
         let _ = self.eval();
         utils::into_raw_mode();
+        self.sync_lock();
         self.print("\r", crossterm::Color::White);
 
         self.print_prompt();
@@ -121,7 +122,7 @@ impl super::Rustie {
             self.lock_pos.1 -= 1;
         }
     }
-    pub fn sync_lock(&mut self) {
+    fn sync_lock(&mut self) {
         self.lock_pos.1 = self.cursor.pos().1;
     }
 }

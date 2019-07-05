@@ -60,7 +60,6 @@ impl Rustie {
         self.update_hint();
         utils::into_raw_mode();
         loop {
-            self.sync_lock();
             if let Some(key_ev) = self.input.next() {
                 self.terminal.clear(ClearType::UntilNewLine).unwrap();
                 match key_ev {
