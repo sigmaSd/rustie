@@ -1,3 +1,7 @@
+**0.1.5**
+- Ignore Ctrlc signal
+- Bug fixes
+
 **0.1.4**
 - Make history persistant
 
