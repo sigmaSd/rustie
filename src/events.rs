@@ -42,24 +42,23 @@ impl super::Rustie {
         self.update_hint();
         self.print(c, Color::DarkYellow);
         self.print_hint();
-        self.update_lock_pos();
+        self.update_lock_pos_with_scroll();
     }
 
     pub fn enter(&mut self) {
-        self.print("\n\r", Color::White);
+        self.new_line();
         let _ = self.eval();
         self.print_prompt();
         self.history.push(self.buffer.drain(..).collect());
         self.env.reset();
         self.update_hint();
-        self.lock_pos.1 = self.cursor.pos().1;
     }
 
     pub fn handle_ctrl_c(&mut self) {
         self.buffer.clear();
-        self.print("\r\n", Color::White);
+        self.new_line();
         self.print_prompt();
-        self.update_lock_pos();
+        self.update_lock_pos_with_scroll();
     }
 
     pub fn handle_ctrl_d(&mut self) {
@@ -111,10 +110,13 @@ impl super::Rustie {
 
 /// keep the lock in sync
 impl super::Rustie {
-    fn update_lock_pos(&mut self) {
+    fn update_lock_pos_with_scroll(&mut self) {
         let cursor = self.cursor.pos();
         if (cursor.0 + 1, cursor.1) == self.terminal.terminal_size() {
             self.lock_pos.1 -= 1;
         }
+    }
+    pub fn sync_lock(&mut self) {
+        self.lock_pos.1 = self.cursor.pos().1;
     }
 }

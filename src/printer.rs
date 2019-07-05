@@ -19,7 +19,7 @@ impl super::Rustie {
     pub fn welcome(&mut self) {
         let _ = self.terminal.clear(ClearType::All);
         self.print("Welcome to rusite!", Color::Blue);
-        self.newline();
+        self.new_line();
     }
 
     pub fn print_prompt(&self) {
@@ -32,8 +32,8 @@ impl super::Rustie {
         let _ = self.color.reset();
     }
 
-    pub fn newline(&mut self) {
-        let _ = self.terminal.write("\n");
+    pub fn new_line(&mut self) {
+        let _ = self.terminal.write("\r\n");
         self.lock_pos.1 += 1;
     }
 }

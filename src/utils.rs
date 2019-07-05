@@ -58,3 +58,13 @@ impl StringTools for String {
         self.chars().count()
     }
 }
+
+pub fn into_raw_mode() {
+    crossterm::RawScreen::into_raw_mode()
+        .unwrap()
+        .disable_drop();
+}
+
+pub fn disable_raw_mode() {
+    crossterm::RawScreen::disable_raw_mode().unwrap();
+}

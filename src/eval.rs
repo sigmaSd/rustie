@@ -1,4 +1,4 @@
-use super::utils::StringTools;
+use super::utils::{self, StringTools};
 use super::Cmds;
 use std::io;
 use std::process;
@@ -29,7 +29,7 @@ impl super::Rustie {
     }
 
     fn parse_as_extern_cmd(&self) -> io::Result<()> {
-        crossterm::RawScreen::disable_raw_mode().unwrap();
+        utils::disable_raw_mode();
 
         let mut items = self.buffer.split_as_cmd();
         let head = match items.next() {
@@ -41,6 +41,8 @@ impl super::Rustie {
             .spawn()?
             .wait()?;
 
+        utils::into_raw_mode();
+        self.print("\r", crossterm::Color::White);
         Ok(())
     }
 }

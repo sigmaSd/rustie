@@ -59,9 +59,8 @@ impl Rustie {
         self.print_prompt();
         self.update_hint();
         loop {
-            crossterm::RawScreen::into_raw_mode()
-                .unwrap()
-                .disable_drop();
+            utils::into_raw_mode();
+            self.sync_lock();
             if let Some(key_ev) = self.input.next() {
                 self.terminal.clear(ClearType::UntilNewLine).unwrap();
                 match key_ev {
@@ -101,7 +100,12 @@ impl Rustie {
     }
 }
 
+fn disable_ctrl_c() {
+    let _ = ctrlc::set_handler(|| {});
+}
+
 fn main() {
+    disable_ctrl_c();
     let mut rustie = Rustie::new();
     rustie.run();
 }
