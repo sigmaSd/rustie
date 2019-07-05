@@ -10,3 +10,4 @@ license = "MIT"
 
 [dependencies]
 crossterm = "0.9.6"
+dirs = "2.0.1"

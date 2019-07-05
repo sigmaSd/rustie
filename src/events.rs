@@ -64,6 +64,7 @@ impl super::Rustie {
 
     pub fn handle_ctrl_d(&mut self) {
         if self.buffer.is_empty() {
+            self.history.save();
             let _ = self.terminal.clear(crossterm::ClearType::All);
             self.terminal.exit();
         }

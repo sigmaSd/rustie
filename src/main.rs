@@ -39,7 +39,7 @@ impl Rustie {
         let color = crossterm.color();
         let cursor = crossterm.cursor();
         let lock_pos = (PROMPT.len() as u16, 0);
-        let history = History::default();
+        let history = History::new(dirs::cache_dir().unwrap().join("rustie")).unwrap_or_default();
 
         Self {
             input,

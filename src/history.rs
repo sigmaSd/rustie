@@ -1,24 +1,44 @@
+use std::fs;
+use std::io;
+use std::path;
+
+#[derive(Default)]
 pub struct History {
     history: Vec<String>,
     current: String,
     cursor: usize,
+    path: path::PathBuf,
 }
-impl Default for History {
-    fn default() -> Self {
-        Self {
-            history: Vec::new(),
-            current: String::new(),
-            cursor: 0,
-        }
-    }
-}
+
 impl History {
+    pub fn new(path: path::PathBuf) -> io::Result<Self> {
+        let _ = fs::create_dir_all(&path);
+
+        let path = path.join("history");
+        if !path.exists() {
+            let _ = fs::File::create(&path);
+        }
+
+        let history: Vec<String> = fs::read_to_string(&path)?
+            .lines()
+            .map(ToOwned::to_owned)
+            .collect();
+        let cursor = history.len();
+        let current = String::new();
+
+        Ok(Self {
+            history,
+            current,
+            cursor,
+            path,
+        })
+    }
     pub fn down(&mut self) -> Option<String> {
         let filtered = self.filter();
         self.cursor += 1;
         if self.cursor >= filtered.len() {
             self.cursor = filtered.len();
-            None
+            Some(self.current.clone())
         } else {
             Some(filtered[self.cursor].clone())
         }
@@ -48,6 +68,11 @@ impl History {
         self.cursor = self.history.len();
     }
 
+    pub fn save(&self) {
+        let history: String = self.history.join("\n");
+        let _ = fs::write(&self.path, history);
+    }
+
     fn filter(&self) -> Vec<String> {
         self.history
             .iter()
@@ -60,9 +85,5 @@ impl History {
         if !self.history.is_empty() {
             self.cursor = self.history.len();
         }
-    }
-
-    fn _reset(&mut self) {
-        *self = Self::default();
     }
 }
