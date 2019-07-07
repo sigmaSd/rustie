@@ -76,7 +76,7 @@ impl super::Rustie {
         if !self.buffer.ends_with(' ') {
             self.hints.append(
                 &mut self
-                    .env
+                    .paths
                     .clone()
                     .into_iter()
                     .filter(|e| {
@@ -94,7 +94,7 @@ impl super::Rustie {
         } else {
             self.hints.append(
                 &mut self
-                    .env
+                    .paths
                     .clone()
                     .into_iter()
                     .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string())

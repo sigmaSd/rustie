@@ -3,13 +3,13 @@ use std::fs;
 use std::path;
 
 #[derive(Clone)]
-pub struct Env {
+pub struct Paths {
     entrys: Vec<path::PathBuf>,
     origin: path::PathBuf,
     _cursor: usize,
 }
 
-impl Default for Env {
+impl Default for Paths {
     fn default() -> Self {
         Self {
             entrys: vec![],
@@ -19,7 +19,7 @@ impl Default for Env {
     }
 }
 
-impl Env {
+impl Paths {
     pub fn new<P: AsRef<path::Path>>(p: P) -> Self {
         let entrys = Self::read_path(p.as_ref());
 
@@ -72,7 +72,7 @@ impl Env {
     }
 }
 
-impl IntoIterator for Env {
+impl IntoIterator for Paths {
     type Item = path::PathBuf;
     type IntoIter = ::std::vec::IntoIter<Self::Item>;
 

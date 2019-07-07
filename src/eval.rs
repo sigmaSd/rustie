@@ -6,7 +6,9 @@ use std::process;
 impl super::Rustie {
     pub fn eval(&mut self) -> io::Result<()> {
         for cmd in self.buffer.split_cmds() {
-            let tokens = cmd.split_tokens();
+            let mut tokens = cmd.split_tokens();
+            self.replace_vars(&mut tokens);
+
             if Cmds::contains(&tokens[0]) {
                 self.parse_as_intern_cmd(tokens)?
             } else {
@@ -33,5 +35,15 @@ impl super::Rustie {
             .wait()?;
 
         Ok(())
+    }
+
+    fn replace_vars(&self, v: &mut [String]) {
+        v.iter_mut().for_each(|s| {
+            if s.starts_with('$') {
+                if let Some(hit) = self.envs.get(&s[1..]) {
+                    *s = hit.to_string();
+                }
+            }
+        })
     }
 }

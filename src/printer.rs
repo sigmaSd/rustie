@@ -21,8 +21,35 @@ impl super::Rustie {
         self.new_line();
     }
 
-    pub fn print_prompt(&self) {
+    pub fn print_prompt(&mut self) {
+        let mut cwd = std::env::current_dir()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned();
+        cwd = cwd.replace(dirs::home_dir().unwrap().to_str().unwrap(), "~");
+
+        let mut cwd: Vec<&str> = cwd.split('/').collect();
+        let tail = cwd.pop().unwrap();
+
+        let cwd: Vec<String> = cwd
+            .into_iter()
+            .map(|s| s.chars().nth(0).unwrap_or_default().to_string())
+            .collect();
+        let cwd = cwd.join("/");
+
+        let path = if cwd.is_empty() {
+            tail.to_string()
+        } else {
+            cwd + "/" + tail
+        };
+
         self.print(PROMPT, Color::Yellow);
+        self.print(&path, Color::Green);
+        self.print("> ", Color::White);
+
+        let x = PROMPT.len() + path.len() + 2;
+        self.lock_pos.0 = x as u16;
     }
 
     pub fn print<S: ToString>(&self, s: S, c: Color) {

@@ -5,18 +5,20 @@ use crossterm::{
 mod cmds;
 mod utils;
 use cmds::Cmds;
-mod env;
-use env::Env;
+mod paths;
+use paths::Paths;
 mod hints;
 use hints::Hints;
 mod history;
 use history::History;
+mod envs;
+use envs::Envs;
 mod eval;
 mod events;
 mod printer;
 mod writer;
 
-pub const PROMPT: &str = "rustie~> ";
+pub const PROMPT: &str = "rustie";
 
 struct Rustie {
     input: SyncReader,
@@ -25,7 +27,8 @@ struct Rustie {
     cursor: TerminalCursor,
     buffer: String,
     hints: Hints,
-    env: Env,
+    paths: Paths,
+    envs: Envs,
     // dont depass this point
     lock_pos: (u16, u16),
     history: History,
@@ -48,7 +51,8 @@ impl Rustie {
             cursor,
             buffer: String::new(),
             hints: Hints::default(),
-            env: Env::new("./"),
+            paths: Paths::new("./"),
+            envs: Envs::new(),
             lock_pos,
             history,
         }

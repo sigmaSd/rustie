@@ -38,7 +38,7 @@ impl super::Rustie {
         self.history.update_current(&self.buffer);
         // update env if a new slash is added or deleted (In/Out dir)
         if c == '/' {
-            self.env.update(&self.buffer);
+            self.paths.update(&self.buffer);
         }
         self.update_hint();
         self.print(c, Color::DarkYellow);
@@ -47,9 +47,13 @@ impl super::Rustie {
     }
 
     pub fn enter(&mut self) {
+        let _ = self.cursor.hide();
+
         self.new_line();
+        self.sync_lock();
         if self.buffer.is_empty() {
             self.print_prompt();
+            let _ = self.cursor.show();
             return;
         }
 
@@ -62,21 +66,23 @@ impl super::Rustie {
             self.new_line();
         }
         utils::into_raw_mode();
-        self.sync_lock();
         self.print("\r", crossterm::Color::White);
 
         self.print_prompt();
+
         self.history.push(self.buffer.drain(..).collect());
-        self.env.reset();
+        self.paths.reset();
         self.update_hint();
+
+        let _ = self.cursor.show();
     }
 
     pub fn handle_ctrl_c(&mut self) {
         self.buffer.clear();
         self.new_line();
         self.print_prompt();
-        self.update_lock_pos_with_scroll();
-        self.env.reset();
+        self.sync_lock();
+        self.paths.reset();
         self.update_hint();
     }
 
@@ -91,7 +97,7 @@ impl super::Rustie {
     pub fn handle_ctrl_l(&mut self) {
         let _ = self.terminal.clear(crossterm::ClearType::All);
         self.print_prompt();
-        self.lock_pos = (super::PROMPT.len() as u16, 0);
+        self.lock_pos.1 = 0;
         self.print(&self.buffer, Color::DarkYellow);
     }
 
