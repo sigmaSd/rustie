@@ -47,13 +47,10 @@ impl super::Rustie {
     }
 
     pub fn enter(&mut self) {
-        let _ = self.cursor.hide();
-
         self.new_line();
         self.sync_lock();
         if self.buffer.is_empty() {
             self.print_prompt();
-            let _ = self.cursor.show();
             return;
         }
 
@@ -73,8 +70,6 @@ impl super::Rustie {
         self.history.push(self.buffer.drain(..).collect());
         self.paths.reset();
         self.update_hint();
-
-        let _ = self.cursor.show();
     }
 
     pub fn handle_ctrl_c(&mut self) {
