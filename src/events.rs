@@ -65,6 +65,7 @@ impl super::Rustie {
         utils::into_raw_mode();
         self.print("\r", crossterm::Color::White);
 
+        self.sync_lock();
         self.print_prompt();
 
         self.history.push(self.buffer.drain(..).collect());
