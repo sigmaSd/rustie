@@ -1,3 +1,8 @@
+**0.1.7**
+- Add history to suggestions
+- Refactor code
+- Bug fixes
+
 **0.1.6**
 - Fix performance regression
 
