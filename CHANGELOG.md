@@ -1,3 +1,7 @@
+**0.1.8**
+- Add the abilty to read env vars, example: `echo $PATH`
+- Add cwd to prompt
+
 **0.1.7**
 - Add history to suggestions
 - Refactor code
