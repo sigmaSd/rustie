@@ -1,16 +1,15 @@
 use super::utils::StringTools;
 use super::Cmds;
 use std::iter;
-use std::path;
 
 #[derive(Default, Debug)]
 pub struct Hints {
-    current_hints: Vec<path::PathBuf>,
+    current_hints: Vec<String>,
     cursor: usize,
 }
 
 impl Hints {
-    pub fn current(&self) -> Option<&path::PathBuf> {
+    pub fn current(&self) -> Option<&String> {
         self.current_hints.get(self.cursor)
     }
 
@@ -27,7 +26,7 @@ impl Hints {
             .drain(..)
             .filter(|i| {
                 for cc in c {
-                    if !cc(i.to_str().unwrap()) {
+                    if !cc(i) {
                         return false;
                     }
                 }
@@ -36,18 +35,18 @@ impl Hints {
             .collect();
     }
 
-    fn _clear(&mut self) {
+    fn clear(&mut self) {
         self.current_hints.clear();
         self.cursor = 0;
     }
 
-    pub fn _append(&mut self, v: &mut Vec<path::PathBuf>) {
+    pub fn append(&mut self, v: &mut Vec<String>) {
         self.current_hints.append(v);
     }
 }
 
-impl iter::FromIterator<path::PathBuf> for Hints {
-    fn from_iter<I: iter::IntoIterator<Item = path::PathBuf>>(i: I) -> Self {
+impl iter::FromIterator<String> for Hints {
+    fn from_iter<I: iter::IntoIterator<Item = String>>(i: I) -> Self {
         let mut current_hints = vec![];
         current_hints.extend(i);
 
@@ -60,43 +59,64 @@ impl iter::FromIterator<path::PathBuf> for Hints {
 
 impl super::Rustie {
     pub fn update_hint(&mut self) {
+        if self.buffer.is_empty() {
+            return;
+        }
+
         let tail = self
             .buffer
-            .split_as_cmd()
+            .split_tokens()
             .last()
-            .unwrap_or_else(|| "".to_string());
+            .cloned()
+            .unwrap_or_default();
+        self.hints.clear();
+        self.hints
+            .append(&mut self.history.filter().iter().rev().cloned().collect());
 
         if !self.buffer.ends_with(' ') {
-            self.hints = self
-                .env
-                .clone()
-                .into_iter()
-                .filter(|e| {
-                    let f_name = e.file_name().unwrap().to_str().unwrap();
-                    if tail.contains('/') {
-                        let slash_tail = tail.rsplit('/').next().unwrap();
-                        f_name.starts_with(&slash_tail)
-                    } else {
-                        f_name.starts_with(&tail)
-                    }
-                })
-                .collect();
+            self.hints.append(
+                &mut self
+                    .env
+                    .clone()
+                    .into_iter()
+                    .filter(|e| {
+                        let f_name = e.file_name().unwrap().to_str().unwrap();
+                        if tail.contains('/') {
+                            let slash_tail = tail.rsplit('/').next().unwrap();
+                            f_name.starts_with(&slash_tail)
+                        } else {
+                            f_name.starts_with(&tail)
+                        }
+                    })
+                    .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string())
+                    .collect(),
+            );
         } else {
-            self.hints = self.env.clone().into_iter().collect();
+            self.hints.append(
+                &mut self
+                    .env
+                    .clone()
+                    .into_iter()
+                    .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string())
+                    .collect(),
+            );
         }
 
         self.check_cmd_hint();
     }
 
     fn check_cmd_hint(&mut self) {
-        let cmds = Cmds::extract_cmds(&self.buffer);
+        let cmds = self.buffer.split_cmds();
         let mut hint_conditions = vec![];
         for cmd in cmds {
-            let (_i, cmd) = (cmd.0, Cmds::from(cmd.1));
-            hint_conditions.push(cmd.get_hint_cond());
+            if let Some(cmd) = &cmd.split_tokens().get(0) {
+                if Cmds::contains(&cmd) {
+                    let cmd = Cmds::from(cmd.as_str());
+                    hint_conditions.push(cmd.get_hint_cond());
+                }
+            }
         }
 
-        // apply cond
         self.hints.apply_conds(&hint_conditions);
     }
 }

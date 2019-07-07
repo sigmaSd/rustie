@@ -33,9 +33,10 @@ impl Env {
     pub fn update(&mut self, buffer: &str) {
         let tail = buffer
             .to_owned()
-            .split_as_cmd()
+            .split_tokens()
             .last()
-            .unwrap_or_else(|| "".to_string());
+            .cloned()
+            .unwrap_or_default();
 
         let mut path = path::Path::new(&tail).components();
         if !tail.ends_with('/') && path.clone().count() > 1 {

@@ -73,10 +73,10 @@ impl History {
         let _ = fs::write(&self.path, history);
     }
 
-    fn filter(&self) -> Vec<String> {
+    pub fn filter(&self) -> Vec<String> {
         self.history
             .iter()
-            .filter(|h| h.contains(&self.current))
+            .filter(|h| h.starts_with(&self.current))
             .map(ToOwned::to_owned)
             .collect()
     }

@@ -7,8 +7,7 @@ impl super::Rustie {
     pub fn print_hint(&self) {
         if let Some(hint) = self.hints.current() {
             self.cursor.save_position().unwrap();
-
-            let mut hint = hint.file_name().unwrap().to_str().unwrap().to_owned();
+            let mut hint = hint.clone();
             hint.strings_inter(&self.buffer);
             self.print(&hint, Color::Cyan);
 

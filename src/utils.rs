@@ -1,6 +1,7 @@
 pub trait StringTools {
     fn strings_inter(&mut self, s: &str);
-    fn split_as_cmd(&self) -> std::vec::IntoIter<String>;
+    fn split_tokens(&self) -> Vec<String>;
+    fn split_cmds(&self) -> Vec<String>;
     fn chars_count(&self) -> usize;
 }
 
@@ -27,9 +28,9 @@ impl StringTools for String {
         }
     }
 
-    fn split_as_cmd(&self) -> std::vec::IntoIter<String> {
-        let mut cmds: Vec<String> = vec![];
-        let mut tmp_cmd = String::new();
+    fn split_tokens(&self) -> Vec<String> {
+        let mut tokens: Vec<String> = vec![];
+        let mut token = String::new();
         let mut quote = false;
         let mut d_quote = false;
 
@@ -39,19 +40,47 @@ impl StringTools for String {
                 '\'' => quote = !quote,
                 ' ' => {
                     if quote || d_quote {
-                        tmp_cmd.push(c);
-                    } else {
-                        cmds.push(tmp_cmd.drain(..).collect());
+                        token.push(c);
+                    } else if !token.is_empty() {
+                        tokens.push(token.drain(..).collect());
+                    }
+                }
+                c => token.push(c),
+            }
+        }
+
+        if !token.is_empty() {
+            tokens.push(token.drain(..).collect());
+        }
+        tokens
+    }
+
+    fn split_cmds(&self) -> Vec<String> {
+        let mut v = vec![];
+        let mut tmp_cmd = String::new();
+        let mut quote = false;
+        let mut d_quote = false;
+
+        for c in self.chars() {
+            match c {
+                '\'' => {
+                    quote = !quote;
+                    tmp_cmd.push(c);
+                }
+                '"' => {
+                    d_quote = !d_quote;
+                    tmp_cmd.push(c);
+                }
+                ';' => {
+                    if !quote && !d_quote {
+                        v.push(tmp_cmd.drain(..).collect())
                     }
                 }
                 c => tmp_cmd.push(c),
             }
         }
-
-        if !tmp_cmd.is_empty() {
-            cmds.push(tmp_cmd.drain(..).collect());
-        }
-        cmds.into_iter()
+        v.push(tmp_cmd.drain(..).collect());
+        v
     }
 
     fn chars_count(&self) -> usize {

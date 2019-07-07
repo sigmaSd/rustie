@@ -1,4 +1,3 @@
-use super::utils::StringTools;
 use std::env;
 use std::path;
 use std::process;
@@ -18,10 +17,10 @@ impl ToString for Cmds {
     }
 }
 
-impl From<String> for Cmds {
-    fn from(s: String) -> Cmds {
+impl From<&str> for Cmds {
+    fn from(s: &str) -> Cmds {
         use Cmds::*;
-        match s.as_str() {
+        match s {
             "cd" => Cd,
             "exit" => Exit,
             _ => unimplemented!(),
@@ -30,7 +29,7 @@ impl From<String> for Cmds {
 }
 
 impl Cmds {
-    pub fn extract_cmds(s: &str) -> Vec<(usize, String)> {
+    pub fn _extract_cmds(s: &str) -> Vec<(usize, String)> {
         let cmds = ["cd", "exit"];
         let mut extracted_cmds = vec![];
         for c in cmds.iter() {
@@ -42,18 +41,30 @@ impl Cmds {
         extracted_cmds
     }
 
+    pub fn contains(c: &str) -> bool {
+        ["cd", "exit"].contains(&c)
+    }
+
     pub fn get_hint_cond(&self) -> Box<Fn(&str) -> bool> {
         use Cmds::*;
         match self {
-            Cd => Box::new(|i: &str| path::Path::new(i).is_dir()),
+            Cd => Box::new(|i: &str| {
+                path::Path::new(i.trim_start_matches("cd").trim_start()).is_dir()
+            }),
             Exit => Box::new(|_: &str| false),
         }
     }
 
-    pub fn run(&self, s: &str) {
+    pub fn run(&self, s: &[String]) {
         use Cmds::*;
         match self {
-            Cd => env::set_current_dir(s.to_owned().split_as_cmd().next().unwrap()).unwrap(),
+            Cd => {
+                if s.is_empty() {
+                    let _ = env::set_current_dir(dirs::home_dir().unwrap());
+                } else {
+                    let _ = env::set_current_dir(&s[0]);
+                }
+            }
             Exit => {
                 if s.is_empty() {
                     process::exit(0)

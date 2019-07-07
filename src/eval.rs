@@ -5,39 +5,30 @@ use std::process;
 
 impl super::Rustie {
     pub fn eval(&mut self) -> io::Result<()> {
-        let cmds = Cmds::extract_cmds(&self.buffer);
-        if cmds.is_empty() {
-            self.parse_as_extern_cmd()
-        } else {
-            self.parse_as_intern_cmd(cmds)
-        }
-    }
-
-    fn parse_as_intern_cmd(&self, cmds: Vec<(usize, String)>) -> io::Result<()> {
-        for cmd in cmds {
-            let (i, cmd) = (cmd.0, Cmds::from(cmd.1));
-            let cmd_suffix: String = self
-                .buffer
-                .split_as_cmd()
-                .skip(i + 1)
-                .map(|s| s.to_owned() + " ")
-                .collect();
-            cmd.run(&cmd_suffix);
+        for cmd in self.buffer.split_cmds() {
+            let tokens = cmd.split_tokens();
+            if Cmds::contains(&tokens[0]) {
+                self.parse_as_intern_cmd(tokens)?
+            } else {
+                self.parse_as_extern_cmd(tokens)?
+            }
         }
 
         Ok(())
     }
 
-    fn parse_as_extern_cmd(&self) -> io::Result<()> {
+    fn parse_as_intern_cmd(&self, tokens: Vec<String>) -> io::Result<()> {
+        let cmd = Cmds::from(tokens[0].as_str());
+        cmd.run(&tokens[1..]);
+
+        Ok(())
+    }
+
+    fn parse_as_extern_cmd(&self, tokens: Vec<String>) -> io::Result<()> {
         utils::disable_raw_mode();
 
-        let mut items = self.buffer.split_as_cmd();
-        let head = match items.next() {
-            Some(h) => h,
-            None => return Ok(()),
-        };
-        process::Command::new(head)
-            .args(&items.collect::<Vec<String>>())
+        process::Command::new(&tokens[0])
+            .args(&tokens[1..])
             .spawn()?
             .wait()?;
 

@@ -48,8 +48,19 @@ impl super::Rustie {
 
     pub fn enter(&mut self) {
         self.new_line();
+        if self.buffer.is_empty() {
+            self.print_prompt();
+            return;
+        }
 
-        let _ = self.eval();
+        if let Err(e) = self.eval() {
+            self.print(
+                format!("Error running command: {}\n{}", &self.buffer, e),
+                Color::Red,
+            );
+            self.lock_pos.1 += 1;
+            self.new_line();
+        }
         utils::into_raw_mode();
         self.sync_lock();
         self.print("\r", crossterm::Color::White);
@@ -65,6 +76,8 @@ impl super::Rustie {
         self.new_line();
         self.print_prompt();
         self.update_lock_pos_with_scroll();
+        self.env.reset();
+        self.update_hint();
     }
 
     pub fn handle_ctrl_d(&mut self) {
