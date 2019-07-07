@@ -36,8 +36,18 @@ impl StringTools for String {
 
         for c in self.chars() {
             match c {
-                '"' => d_quote = !d_quote,
-                '\'' => quote = !quote,
+                '"' => {
+                    d_quote = !d_quote;
+                    if !token.is_empty() {
+                        tokens.push(token.drain(..).collect());
+                    }
+                }
+                '\'' => {
+                    quote = !quote;
+                    if !token.is_empty() {
+                        tokens.push(token.drain(..).collect());
+                    }
+                }
                 ' ' => {
                     if quote || d_quote {
                         token.push(c);
