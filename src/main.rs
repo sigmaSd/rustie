@@ -13,6 +13,8 @@ mod history;
 use history::History;
 mod envs;
 use envs::Envs;
+mod bins;
+use bins::Bins;
 mod eval;
 mod events;
 mod printer;
@@ -32,6 +34,7 @@ struct Rustie {
     // dont depass this point
     lock_pos: (u16, u16),
     history: History,
+    bins: Bins,
 }
 
 impl Rustie {
@@ -43,6 +46,7 @@ impl Rustie {
         let cursor = crossterm.cursor();
         let lock_pos = (PROMPT.len() as u16, 0);
         let history = History::new(dirs::cache_dir().unwrap().join("rustie")).unwrap_or_default();
+        let bins = Bins::new();
 
         Self {
             input,
@@ -55,6 +59,7 @@ impl Rustie {
             envs: Envs::new(),
             lock_pos,
             history,
+            bins,
         }
     }
 
@@ -94,7 +99,7 @@ impl Rustie {
                         self.handle_ctrl_l();
                     }
                     InputEvent::Keyboard(KeyEvent::CtrlLeft) => {
-                        dbg!(&self.hints);
+                        dbg!(&self.bins);
                     }
                     _ => (),
                 }

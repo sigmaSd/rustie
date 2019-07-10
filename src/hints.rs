@@ -106,7 +106,24 @@ impl super::Rustie {
         }
 
         // add var hints
-        self.hints.append(&mut self.envs.keys());
+        self.hints.append(
+            &mut self
+                .envs
+                .keys()
+                .into_iter()
+                .filter(|s| s.starts_with(&tail.trim_start_matches('$')))
+                .collect(),
+        );
+
+        // add bins hints
+        self.hints.append(
+            &mut self
+                .bins
+                .keys()
+                .into_iter()
+                .filter(|s| s.starts_with(&tail))
+                .collect(),
+        );
 
         self.check_cmd_hint();
     }
