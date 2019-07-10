@@ -15,4 +15,8 @@ impl Envs {
     pub fn get(&self, s: &str) -> Option<&String> {
         self.envs.get(s)
     }
+
+    pub fn keys(&self) -> Vec<String> {
+        self.envs.keys().map(ToOwned::to_owned).collect()
+    }
 }

@@ -70,9 +70,12 @@ impl super::Rustie {
             .cloned()
             .unwrap_or_default();
         self.hints.clear();
+
+        // add hitory hints
         self.hints
             .append(&mut self.history.filter().iter().rev().cloned().collect());
 
+        // add path hints
         if !self.buffer.ends_with(' ') {
             self.hints.append(
                 &mut self
@@ -101,6 +104,9 @@ impl super::Rustie {
                     .collect(),
             );
         }
+
+        // add var hints
+        self.hints.append(&mut self.envs.keys());
 
         self.check_cmd_hint();
     }
