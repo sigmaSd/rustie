@@ -1,3 +1,7 @@
+**0.1.9**
+- Add env vars to suggestions
+- Add bins to suggestions
+
 **0.1.8**
 - Add the abilty to read env vars, example: `echo $PATH`
 - Add cwd to prompt
