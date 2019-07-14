@@ -1,3 +1,6 @@
+**0.1.12**
+- Improve History
+
 **0.1.11**
 - Make envs cross-platform
 - Update Os `PATH` with `RUSTIE_PATH`
