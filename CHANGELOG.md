@@ -1,3 +1,7 @@
+**0.1.11**
+- Make envs cross-platform
+- Update Os `PATH` with `RUSTIE_PATH`
+
 **0.1.10**
 - Add Configuration file ($HOME/.config/rustie/rustie.config)
 - Add Configuration command `SETUVAR` to set custom variable
