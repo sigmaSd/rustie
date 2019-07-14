@@ -72,8 +72,16 @@ impl super::Rustie {
         self.hints.clear();
 
         // add hitory hints
-        self.hints
-            .append(&mut self.history.filter().iter().rev().cloned().collect());
+        self.hints.append(
+            &mut self
+                .history
+                .get()
+                .iter()
+                .filter(|h| h.starts_with(&self.buffer))
+                .rev()
+                .cloned()
+                .collect(),
+        );
 
         // add path hints
         if !self.buffer.ends_with(' ') {
