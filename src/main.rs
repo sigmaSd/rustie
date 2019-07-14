@@ -15,6 +15,8 @@ mod envs;
 use envs::Envs;
 mod bins;
 use bins::Bins;
+mod config;
+use config::Config;
 mod eval;
 mod events;
 mod printer;
@@ -46,7 +48,11 @@ impl Rustie {
         let cursor = crossterm.cursor();
         let lock_pos = (PROMPT.len() as u16, 0);
         let history = History::new(dirs::cache_dir().unwrap().join("rustie")).unwrap_or_default();
-        let bins = Bins::new();
+
+        let mut envs = Envs::new();
+        Config::parse_config(&mut envs);
+
+        let bins = Bins::new(&envs);
 
         Self {
             input,
@@ -56,10 +62,10 @@ impl Rustie {
             buffer: String::new(),
             hints: Hints::default(),
             paths: Paths::new("./"),
-            envs: Envs::new(),
+            envs,
+            bins,
             lock_pos,
             history,
-            bins,
         }
     }
 

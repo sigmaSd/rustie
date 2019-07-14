@@ -1,3 +1,8 @@
+**0.1.10**
+- Add Configuration file ($HOME/.config/rustie/rustie.config)
+- Add Configuration command `SETUVAR` to set custom variable
+- Add a custom variable `RUSTIE_PATH` used to tell rustie where to look for additional binaries
+
 **0.1.9**
 - Add env vars to suggestions
 - Add bins to suggestions

@@ -12,6 +12,10 @@ impl Envs {
         }
     }
 
+    pub fn get_mut_map(&mut self) -> &mut HashMap<String, String> {
+        &mut self.envs
+    }
+
     pub fn get(&self, s: &str) -> Option<&String> {
         self.envs.get(s)
     }

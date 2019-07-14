@@ -29,12 +29,15 @@ impl super::Rustie {
     fn parse_as_extern_cmd(&self, tokens: Vec<String>) -> io::Result<()> {
         utils::disable_raw_mode();
 
-        process::Command::new(&tokens[0])
-            .args(&tokens[1..])
-            .spawn()?
-            .wait()?;
-
-        Ok(())
+        if let Some(cmd) = self.bins.get_cmd(&tokens[0]) {
+            process::Command::new(cmd)
+                .args(&tokens[1..])
+                .spawn()?
+                .wait()?;
+            Ok(())
+        } else {
+            Err(io::Error::new(io::ErrorKind::NotFound, "Uknown command"))
+        }
     }
 
     fn replace_vars(&self, v: &mut [String]) {
