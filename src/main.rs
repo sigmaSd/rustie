@@ -51,6 +51,7 @@ impl Rustie {
 
         let mut envs = Envs::new();
         Config::parse_config(&mut envs);
+        envs.update_os_path();
 
         let bins = Bins::new(&envs);
 

@@ -1,5 +1,6 @@
 use super::Envs;
 use std::collections::HashMap;
+use std::env;
 use std::fs;
 use std::path;
 
@@ -12,9 +13,9 @@ impl Bins {
     pub fn new(envs: &Envs) -> Self {
         let mut bins = HashMap::new();
         if let Some(paths) = envs.get("PATH") {
-            let mut paths: Vec<&str> = paths.split(':').collect();
+            let mut paths: Vec<path::PathBuf> = env::split_paths(paths).collect();
             if let Some(rustie_paths) = envs.get("RUSTIE_PATH") {
-                paths.extend(rustie_paths.split(':'));
+                paths.extend(env::split_paths(rustie_paths));
             }
             for path in paths {
                 if let Ok(entries) = fs::read_dir(path) {
@@ -33,9 +34,5 @@ impl Bins {
 
     pub fn keys(&self) -> Vec<String> {
         self.bins.keys().map(ToOwned::to_owned).collect()
-    }
-
-    pub fn get_cmd(&self, c: &str) -> Option<&path::PathBuf> {
-        self.bins.get(c)
     }
 }
