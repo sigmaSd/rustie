@@ -5,6 +5,12 @@ use std::process;
 
 impl super::Rustie {
     pub fn eval(&mut self) -> io::Result<()> {
+        if let Ok(res) = Self::try_eval_as_math(&self.buffer) {
+            self.print(res, crossterm::Color::Magenta);
+            self.new_line();
+            return Ok(());
+        }
+
         for cmd in self.buffer.split_cmds() {
             let mut tokens = cmd.split_tokens();
             self.replace_vars(&mut tokens);
@@ -44,5 +50,9 @@ impl super::Rustie {
                 }
             }
         })
+    }
+
+    fn try_eval_as_math(e: &str) -> Result<evalexpr::Value, evalexpr::EvalexprError> {
+        evalexpr::eval(e)
     }
 }
