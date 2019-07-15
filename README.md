@@ -13,4 +13,6 @@ Cross Platform Shell
 ```
 - `RUSTIE_PATH` is a special variable used to tell rustie where to look for additional binaries
 
+- Rustie can handle math thanks to `evalexpr` crate
+
 ## [Changelog](./CHANGELOG.md)

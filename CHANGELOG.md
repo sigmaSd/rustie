@@ -1,3 +1,6 @@
+**0.1.15**
+- Handle math expressions via `evalexpr`
+
 **0.1.14**
 - Increase history hint priority
 
