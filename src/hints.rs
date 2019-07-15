@@ -2,7 +2,7 @@ use super::utils::StringTools;
 use super::Cmds;
 use std::iter;
 
-enum HintType {
+pub enum HintType {
     History,
     // place holder
     Other,
@@ -16,10 +16,10 @@ pub struct Hints {
 
 impl Hints {
     pub fn current(&self) -> Option<&String> {
-        if let Some(hint) = self.current_hints.get(self.cursor) {
+        if let Some(hint) = self.history_hints.get(self.cursor) {
             Some(&hint)
         } else {
-            self.history_hints.get(self.cursor)
+            self.current_hints.get(self.cursor)
         }
     }
 
@@ -47,6 +47,7 @@ impl Hints {
 
     fn clear(&mut self) {
         self.current_hints.clear();
+        self.history_hints.clear();
         self.cursor = 0;
     }
 
@@ -61,8 +62,11 @@ impl Hints {
         self.current_hints.len()
     }
 
-    pub fn _get(&self) -> &[String] {
-        &self.current_hints
+    pub fn get(&self, hint_type: HintType) -> &[String] {
+        match hint_type {
+            HintType::History => &self.history_hints,
+            HintType::Other => &self.current_hints,
+        }
     }
 
     pub fn _get_mut(&mut self) -> &mut Vec<String> {

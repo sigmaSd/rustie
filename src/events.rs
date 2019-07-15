@@ -1,16 +1,18 @@
+use super::hints::HintType;
 use super::utils;
 use crossterm::{ClearType, Color};
 
 impl super::Rustie {
     pub fn right(&mut self) {
         if self.hints.current().is_some() {
-            self.use_hint()
+            self.use_hint(None)
         }
     }
 
     pub fn tab(&mut self) {
         if self.hints.non_history_hints_num() == 1 {
-            self.use_hint();
+            let hint = self.hints.get(HintType::Other).get(0).cloned();
+            self.use_hint(hint.as_ref());
         } else {
             self.hints.cycle();
             self.print_hint();

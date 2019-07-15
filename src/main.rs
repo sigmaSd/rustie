@@ -106,7 +106,7 @@ impl Rustie {
                         self.handle_ctrl_l();
                     }
                     InputEvent::Keyboard(KeyEvent::CtrlLeft) => {
-                        dbg!(&self.bins);
+                        dbg!(&self.hints);
                     }
                     _ => (),
                 }
