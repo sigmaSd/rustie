@@ -1,3 +1,6 @@
+**0.1.14**
+- Increase history hint priority
+
 **0.1.13**
 - Keep history unique
 - Use suggestion with tab if its unique
