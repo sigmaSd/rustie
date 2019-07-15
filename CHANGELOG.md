@@ -1,3 +1,7 @@
+**0.1.13**
+- Keep history unique
+- Use suggestion with tab if its unique
+
 **0.1.12**
 - Improve History
 
