@@ -9,8 +9,12 @@ impl super::Rustie {
     }
 
     pub fn tab(&mut self) {
-        self.hints.cycle();
-        self.print_hint();
+        if self.hints.non_history_hints_num() == 1 {
+            self.use_hint();
+        } else {
+            self.hints.cycle();
+            self.print_hint();
+        }
     }
 
     pub fn back_space(&mut self) {

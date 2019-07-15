@@ -2,15 +2,25 @@ use super::utils::StringTools;
 use super::Cmds;
 use std::iter;
 
+enum HintType {
+    History,
+    // place holder
+    Other,
+}
 #[derive(Default, Debug)]
 pub struct Hints {
+    history_hints: Vec<String>,
     current_hints: Vec<String>,
     cursor: usize,
 }
 
 impl Hints {
     pub fn current(&self) -> Option<&String> {
-        self.current_hints.get(self.cursor)
+        if let Some(hint) = self.current_hints.get(self.cursor) {
+            Some(&hint)
+        } else {
+            self.history_hints.get(self.cursor)
+        }
     }
 
     pub fn cycle(&mut self) {
@@ -40,8 +50,23 @@ impl Hints {
         self.cursor = 0;
     }
 
-    pub fn append(&mut self, v: &mut Vec<String>) {
-        self.current_hints.append(v);
+    fn append(&mut self, v: &mut Vec<String>, hint_type: HintType) {
+        match hint_type {
+            HintType::History => self.history_hints.append(v),
+            HintType::Other => self.current_hints.append(v),
+        }
+    }
+
+    pub fn non_history_hints_num(&self) -> usize {
+        self.current_hints.len()
+    }
+
+    pub fn _get(&self) -> &[String] {
+        &self.current_hints
+    }
+
+    pub fn _get_mut(&mut self) -> &mut Vec<String> {
+        &mut self.current_hints
     }
 }
 
@@ -52,6 +77,7 @@ impl iter::FromIterator<String> for Hints {
 
         Self {
             current_hints,
+            history_hints: vec![],
             cursor: 0,
         }
     }
@@ -81,6 +107,7 @@ impl super::Rustie {
                 .rev()
                 .cloned()
                 .collect(),
+            HintType::History,
         );
 
         // add path hints
@@ -101,6 +128,7 @@ impl super::Rustie {
                     })
                     .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string())
                     .collect(),
+                HintType::Other,
             );
         } else {
             self.hints.append(
@@ -110,6 +138,7 @@ impl super::Rustie {
                     .into_iter()
                     .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string())
                     .collect(),
+                HintType::Other,
             );
         }
 
@@ -121,6 +150,7 @@ impl super::Rustie {
                 .into_iter()
                 .filter(|s| s.starts_with(&tail.trim_start_matches('$')))
                 .collect(),
+            HintType::Other,
         );
 
         // add bins hints
@@ -131,6 +161,7 @@ impl super::Rustie {
                 .into_iter()
                 .filter(|s| s.starts_with(&tail))
                 .collect(),
+            HintType::Other,
         );
 
         self.check_cmd_hint();
