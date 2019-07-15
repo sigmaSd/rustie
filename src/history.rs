@@ -68,9 +68,29 @@ impl History {
         self.cursor = self.history.len();
     }
 
-    pub fn save(&self) {
+    pub fn save(&mut self) {
+        self.keep_unique_history();
         let history: String = self.history.join("\n");
         let _ = fs::write(&self.path, history);
+    }
+
+    fn keep_unique_history(&mut self) {
+        // remove all duplicates while keeping the latest one
+        let mut i: i32 = self.history.len() as i32 - 1;
+        while i >= 0 {
+            let current_his = self.history[i as usize].clone();
+            let mut j = 1;
+            let mut removed = 0;
+            while i - j >= 0 {
+                let search_idx = (i - j) as usize;
+                if current_his.trim() == self.history[search_idx].trim() {
+                    self.history.remove(search_idx);
+                    removed += 1;
+                }
+                j += 1;
+            }
+            i -= 1 + removed;
+        }
     }
 
     pub fn get(&self) -> &[String] {
