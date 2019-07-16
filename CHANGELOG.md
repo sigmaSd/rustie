@@ -1,3 +1,6 @@
+**0.1.16**
+- Handle pipes
+
 **0.1.15**
 - Handle math expressions via `evalexpr`
 

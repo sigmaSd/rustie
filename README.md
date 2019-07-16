@@ -12,7 +12,7 @@ Cross Platform Shell
 -> SETUVAR RUSTIE_PATH /home/user/.cargo/bin
 ```
 - `RUSTIE_PATH` is a special variable used to tell rustie where to look for additional binaries
-
 - Rustie can handle math thanks to [evalexpr](https://github.com/ISibboI/evalexpr)
+- Rustie can handle pipes
 
 ## [Changelog](./CHANGELOG.md)
