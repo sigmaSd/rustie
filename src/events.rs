@@ -14,6 +14,8 @@ impl super::Rustie {
         if self.hints.hints_num(HintType::Other) == 1 {
             let hint = self.hints.get(HintType::Other).get(0).cloned();
             self.use_hint(hint.as_ref());
+
+            // Add main seperator if able, exp `cd Projects` -> `cd Projects/`
             let hint = hint.unwrap();
             if path::Path::new(&hint).is_dir() && !hint.ends_with(path::MAIN_SEPARATOR) {
                 self.handle_char(path::MAIN_SEPARATOR);
