@@ -1,6 +1,7 @@
 use super::hints::HintType;
 use super::utils;
 use crossterm::{ClearType, Color};
+use std::path;
 
 impl super::Rustie {
     pub fn right(&mut self) {
@@ -10,9 +11,13 @@ impl super::Rustie {
     }
 
     pub fn tab(&mut self) {
-        if self.hints.non_history_hints_num() == 1 {
+        if self.hints.hints_num(HintType::Other) == 1 {
             let hint = self.hints.get(HintType::Other).get(0).cloned();
             self.use_hint(hint.as_ref());
+            let hint = hint.unwrap();
+            if path::Path::new(&hint).is_dir() && !hint.ends_with(path::MAIN_SEPARATOR) {
+                self.handle_char(path::MAIN_SEPARATOR);
+            }
         } else {
             self.hints.cycle();
             self.print_hint();

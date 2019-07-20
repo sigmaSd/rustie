@@ -58,8 +58,11 @@ impl Hints {
         }
     }
 
-    pub fn non_history_hints_num(&self) -> usize {
-        self.current_hints.len()
+    pub fn hints_num(&self, hint_type: HintType) -> usize {
+        match hint_type {
+            HintType::History => self.history_hints.len(),
+            HintType::Other => self.current_hints.len(),
+        }
     }
 
     pub fn get(&self, hint_type: HintType) -> &[String] {
