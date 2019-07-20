@@ -51,10 +51,10 @@ impl Hints {
         self.cursor = 0;
     }
 
-    fn append(&mut self, v: &mut Vec<String>, hint_type: HintType) {
+    fn extend<T: IntoIterator<Item = String>>(&mut self, v: T, hint_type: HintType) {
         match hint_type {
-            HintType::History => self.history_hints.append(v),
-            HintType::Other => self.current_hints.append(v),
+            HintType::History => self.history_hints.extend(v),
+            HintType::Other => self.current_hints.extend(v),
         }
     }
 
@@ -96,34 +96,30 @@ impl super::Rustie {
             return;
         }
 
-        let tail = self
-            .buffer
-            .split_tokens()
-            .last()
-            .cloned()
-            .unwrap_or_default();
+        let current_buffer = self.buffer.clone();
+
+        let tail = current_buffer.split_tokens();
+        let tail = tail.last().map(String::as_str).unwrap_or("");
+
         self.hints.clear();
 
         // add hitory hints
-        self.hints.append(
-            &mut self
-                .history
+        self.hints.extend(
+            self.history
                 .get()
                 .iter()
-                .filter(|h| h.starts_with(&self.buffer))
+                .filter(|h| h.starts_with(&current_buffer))
                 .rev()
-                .cloned()
-                .collect(),
+                .cloned(),
             HintType::History,
         );
 
         // add path hints
         if !self.buffer.ends_with(' ') {
-            self.hints.append(
+            self.hints.extend(
                 &mut self
                     .paths
-                    .clone()
-                    .into_iter()
+                    .iter()
                     .filter(|e| {
                         let f_name = e.file_name().unwrap().to_str().unwrap();
                         if tail.contains('/') {
@@ -133,41 +129,32 @@ impl super::Rustie {
                             f_name.starts_with(&tail)
                         }
                     })
-                    .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string())
-                    .collect(),
+                    .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string()),
                 HintType::Other,
             );
         } else {
-            self.hints.append(
+            self.hints.extend(
                 &mut self
                     .paths
-                    .clone()
-                    .into_iter()
-                    .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string())
-                    .collect(),
+                    .iter()
+                    .map(|e| e.to_str().unwrap().trim_start_matches("./").to_string()),
                 HintType::Other,
             );
         }
 
         // add var hints
-        self.hints.append(
+        self.hints.extend(
             &mut self
                 .envs
                 .keys()
-                .into_iter()
                 .filter(|s| s.starts_with(&tail.trim_start_matches('$')))
-                .collect(),
+                .cloned(),
             HintType::Other,
         );
 
         // add bins hints
-        self.hints.append(
-            &mut self
-                .bins
-                .keys()
-                .into_iter()
-                .filter(|s| s.starts_with(&tail))
-                .collect(),
+        self.hints.extend(
+            &mut self.bins.keys().filter(|s| s.starts_with(&tail)).cloned(),
             HintType::Other,
         );
 

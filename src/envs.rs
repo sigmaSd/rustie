@@ -21,8 +21,8 @@ impl Envs {
         self.envs.get(s)
     }
 
-    pub fn keys(&self) -> Vec<String> {
-        self.envs.keys().map(ToOwned::to_owned).collect()
+    pub fn keys(&self) -> impl Iterator<Item = &String> {
+        self.envs.keys()
     }
 
     pub fn update_os_path(&mut self) {

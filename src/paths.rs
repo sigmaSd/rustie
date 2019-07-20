@@ -52,6 +52,10 @@ impl Paths {
         self.entrys.append(&mut Self::read_path(&self.origin));
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = &path::PathBuf> {
+        self.entrys.iter()
+    }
+
     fn read_path<P: AsRef<path::Path>>(path: P) -> Vec<path::PathBuf> {
         if let Ok(f) = fs::read_dir(path.as_ref()) {
             f.map(|e| e.unwrap().path()).collect()

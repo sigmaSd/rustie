@@ -32,7 +32,7 @@ impl Bins {
         Self { bins }
     }
 
-    pub fn keys(&self) -> Vec<String> {
-        self.bins.keys().map(ToOwned::to_owned).collect()
+    pub fn keys(&self) -> impl Iterator<Item = &String> {
+        self.bins.keys()
     }
 }
