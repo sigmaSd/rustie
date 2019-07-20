@@ -1,6 +1,6 @@
 use super::utils::{self, StringTools};
 use super::Cmds;
-use std::io::{self, Read};
+use std::io;
 use std::process;
 
 impl super::Rustie {
@@ -50,10 +50,7 @@ impl super::Rustie {
         utils::disable_raw_mode();
 
         if tokens.contains(&"|".into()) {
-            self.print(
-                Self::run_with_pipes(&tokens).unwrap(),
-                crossterm::Color::Cyan,
-            );
+            Self::run_with_pipes(&tokens).unwrap();
         } else {
             process::Command::new(&tokens[0])
                 .args(&tokens[1..])
@@ -64,36 +61,39 @@ impl super::Rustie {
         Ok(())
     }
 
-    fn run_with_pipes(cmd: &[String]) -> io::Result<String> {
-        let mut mem = None;
+    fn run_with_pipes(cmd: &[String]) -> io::Result<()> {
+        let mut stdin = None;
 
-        let runit = |mem: Option<process::Child>, c: &[String]| -> Option<process::Child> {
-            if c.is_empty() {
+        let runit = |stdin: Option<process::Child>,
+                     stdout: process::Stdio,
+                     cmd: &[String]|
+         -> Option<process::Child> {
+            if cmd.is_empty() {
                 return None;
             }
 
-            let mut c = c.iter();
+            let mut cmd = cmd.iter();
 
-            let mem = if mem.is_some() {
-                mem.unwrap().stdout
+            let stdin = if stdin.is_some() {
+                stdin.unwrap().stdout
             } else {
                 None
             };
 
-            if let Some(mem) = mem {
-                if let Ok(child) = process::Command::new(c.next()?)
-                    .args(&c.collect::<Vec<&String>>())
-                    .stdin(mem)
-                    .stdout(process::Stdio::piped())
+            if let Some(stdin) = stdin {
+                if let Ok(child) = process::Command::new(cmd.next()?)
+                    .args(&cmd.collect::<Vec<&String>>())
+                    .stdin(stdin)
+                    .stdout(stdout)
                     .spawn()
                 {
                     Some(child)
                 } else {
                     None
                 }
-            } else if let Ok(child) = process::Command::new(c.next()?)
-                .args(&c.collect::<Vec<&String>>())
-                .stdout(process::Stdio::piped())
+            } else if let Ok(child) = process::Command::new(cmd.next()?)
+                .args(&cmd.collect::<Vec<&String>>())
+                .stdout(stdout)
                 .spawn()
             {
                 Some(child)
@@ -102,14 +102,20 @@ impl super::Rustie {
             }
         };
 
-        for c in cmd.split(|c| c == "|") {
-            mem = runit(mem, c);
+        let mut cmd = cmd.split(|c| c == "|").peekable();
+        while let Some(c) = cmd.next() {
+            let stdout = if cmd.peek().is_some() {
+                process::Stdio::piped()
+            } else {
+                process::Stdio::inherit()
+            };
+            stdin = runit(stdin, stdout, c);
+        }
+        // wait for the last command
+        if let Some(process) = stdin.as_mut() {
+            let _ = process.wait();
         }
 
-        let mut s = String::new();
-        if let Some(mem) = mem {
-            mem.stdout.unwrap().read_to_string(&mut s)?;
-        }
-        Ok(s)
+        Ok(())
     }
 }
