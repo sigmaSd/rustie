@@ -1,6 +1,6 @@
 [package]
 name = "rustie"
-version = "0.1.17"
+version = "0.1.18"
 authors = ["Nbiba Bedis <bedisnbiba@gmail.com>"]
 edition = "2018"
 readme = "README.md"

@@ -1,3 +1,6 @@
+**0.1.18**
+- Improve pipes handling
+
 **0.1.17**
 - Improve directories autocompletion
 - Improve performance by using iterators
